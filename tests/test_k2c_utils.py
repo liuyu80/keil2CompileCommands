@@ -123,6 +123,12 @@ class K2CUtilsTests(unittest.TestCase):
             data = json.loads(out.read_text(encoding="utf-8"))
             self.assertEqual(len(data), 4)
 
+    def test_cli_version(self) -> None:
+        with self.assertRaises(SystemExit) as context:
+            main(["--version"])
+
+        self.assertEqual(context.exception.code, 0)
+
     @staticmethod
     def sample_project() -> str:
         return textwrap.dedent(

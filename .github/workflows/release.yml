@@ -20,6 +20,8 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
       - name: Run pyinstaller
+        env:
+          K2C_VERSION: ${{ github.ref_name }}
         run: |
           python -m PyInstaller k2c.spec
       - run: ls dist

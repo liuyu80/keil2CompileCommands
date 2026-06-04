@@ -40,6 +40,7 @@ uv run --no-sync k2c <path_to_your_keil_project.uvprojx> [options]
 ```
 
 **参数说明:**
+- `--version`: 输出当前版本号
 - `-d`: 可选参数，创建clangd缓存目录
   - 不带参数值: 默认创建`.cache`目录
   - 带参数值: 创建指定名称的目录
@@ -61,6 +62,11 @@ uv run --no-sync k2c C:/Path/To/Your/Project/YourProject.uvprojx
 查看 Target:
 ```bash
 uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx --list-targets
+```
+
+查看版本:
+```bash
+uv run --no-sync k2c --version
 ```
 
 指定 Target 和编译器:

@@ -1,5 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+from pathlib import Path
+
+
+version = os.getenv('K2C_VERSION', '0.1.0')
+version_hook = Path('build') / 'k2c_version_hook.py'
+version_hook.parent.mkdir(parents=True, exist_ok=True)
+version_hook.write_text(
+    "import os\n\n"
+    f"os.environ.setdefault('K2C_VERSION', {version!r})\n",
+    encoding='utf-8',
+)
+
 
 a = Analysis(
     ['main.py'],
@@ -9,7 +22,7 @@ a = Analysis(
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=[str(version_hook)],
     excludes=[],
     noarchive=False,
     optimize=0,

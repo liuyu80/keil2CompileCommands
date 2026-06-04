@@ -12,12 +12,14 @@ from k2c_utils import (
     list_target_names,
     write_compile_commands,
 )
+from version import get_version
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Parse Keil project file and generate compile_commands.json"
     )
+    parser.add_argument("--version", action="version", version=f"k2c {get_version()}")
     parser.add_argument("project_file", type=str, help="Path to Keil project file (.uvprojx .uvproj)")
     parser.add_argument("-d", nargs="?", const=".cache", metavar="CACHE_DIR",
                         help="Create clangd cache directory (default: .cache)")
