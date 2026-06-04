@@ -32,7 +32,7 @@
 通过 pip 安装 Python 包:
 
 ```bash
-pip install keil2compilecommands
+pip install k2c
 ```
 
 安装后可以直接运行:
@@ -157,5 +157,4 @@ k2c ../../MyKeilProject/MyProject.uvprojx -d
 Clangd LSP 安装包: https://github.com/clangd/clangd/releases/latest
 
 VS Code 的 Clangd 插件: https://github.com/clangd/vscode-clangd/releases/latest
-
 

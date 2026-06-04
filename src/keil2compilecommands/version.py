@@ -4,7 +4,7 @@ import os
 from importlib import metadata
 
 
-PACKAGE_NAME = "keil2compilecommands"
+PACKAGE_NAME = "k2c"
 DEFAULT_VERSION = "0.1.0"
 
 
