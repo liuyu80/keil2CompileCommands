@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "keil2compilecommands"
-description = "Add your description here"
+description = "Keil .uvprojx to compile_commands.json Converter"
 readme = "README.md"
 requires-python = ">=3.13"
 dynamic = ["version"]
