@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=69", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "keil2compilecommands"
-version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
+dynamic = ["version"]
 dependencies = [
     "json5>=0.12.0",
 ]
@@ -18,9 +18,14 @@ k2c = "keil2compilecommands.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools_scm]
+fallback_version = "0.1.0"
+
 [dependency-groups]
 dev = [
     "auto-py-to-exe>=2.46.0",
+    "build>=1.2.2",
+    "twine>=6.1.0",
 ]
 
 [[tool.uv.index]]

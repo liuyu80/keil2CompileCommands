@@ -1,0 +1,26 @@
+{
+    "version": "$version",
+    "description": "Convert Keil MDK project files to compile_commands.json for clangd.",
+    "homepage": "https://github.com/liuyu80/keil2CompileCommands",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/liuyu80/keil2CompileCommands/releases/download/v$version/k2c.exe",
+            "hash": "sha256:$sha256"
+        }
+    },
+    "bin": "k2c.exe",
+    "checkver": {
+        "github": "https://github.com/liuyu80/keil2CompileCommands"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/liuyu80/keil2CompileCommands/releases/download/v$version/k2c.exe",
+                "hash": {
+                    "url": "$url.sha256"
+                }
+            }
+        }
+    }
+}
