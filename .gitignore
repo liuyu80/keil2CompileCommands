@@ -11,3 +11,5 @@ wheels/
 data/
 compile_commands.json
 output/
+*.uvprojx
+uv.lock
