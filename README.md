@@ -1,6 +1,6 @@
 # Keil to Compile Commands Converter
 
-这是一个 Python 脚本，用于解析 Keil MDK 项目文件 (.uvprojx、.uvproj) 并生成 `compile_commands.json` 文件。这个文件可以被 Clangd 等语言服务器使用，以提供更准确的代码补全、导航和诊断功能。
+这是一个 Python/uv 工具，用于解析 Keil MDK 项目文件 (.uvprojx、.uvproj) 并生成 `compile_commands.json` 文件。这个文件可以被 Clangd 等语言服务器使用，以提供更准确的代码补全、导航和诊断功能。
 
 ## 功能
 
@@ -8,45 +8,84 @@
 *   提取项目中包含的 C/C++ 源文件 (`.c`) 和汇编文件 (`.s`)。
 *   提取在 Keil 项目设置中定义的宏 (`-D` 标志)。
 *   提取在 Keil 项目设置中指定的包含路径 (`-I` 标志)。
+*   支持 Target 选择和 Target 列表查看。
+*   合并 Target、Group、File 级别的宏、包含路径和部分编译选项。
+*   支持 C、C++、汇编源文件 (`.c`, `.cc`, `.cpp`, `.cxx`, `.s`, `.S`)。
+*   从 Keil CPU/FPU 配置推导常用 clang 参数，如 `-mcpu`、`-mthumb`、`-mfpu`。
 *   自动处理包含路径的相对路径转换
 *   统一路径分隔符为 `/` 格式
 *   支持从 VSCode Clangd 设置中自动获取编译器路径
+*   支持检查缺失的源文件和包含目录。
 *   根据提取的信息生成 `compile_commands.json` 文件。
 
 ## 依赖
 
-*   Python 3.x
+*   uv
+*   Python 3.13+
 *   标准库: `xml.etree.ElementTree`, `json`, `os`, `sys` (无需额外安装)
-*   可选: `json5` (用于读取带注释的VSCode设置文件)
+*   `json5` (由 uv 按 `pyproject.toml` 自动安装，用于读取带注释的VSCode设置文件)
 
 ## 使用方法
 
-在命令行中运行脚本，并将 Keil 项目文件 (`.uvprojx`) 的路径作为参数传递：
+首次使用先同步运行环境：
 
 ```bash
-python main.py <path_to_your_keil_project.uvprojx> [-d [CACHE_DIR]]
+uv sync
+```
+
+日常使用建议加 `--no-sync`，避免每次运行前重复检查和同步环境：
+
+```bash
+uv run --no-sync k2c <path_to_your_keil_project.uvprojx> [options]
 ```
 
 **参数说明:**
 - `-d`: 可选参数，创建clangd缓存目录
   - 不带参数值: 默认创建`.cache`目录
   - 带参数值: 创建指定名称的目录
+- `-o, --output`: 指定输出文件路径，默认 `compile_commands.json`
+- `--target`: 指定要解析的 Keil Target 名称
+- `--list-targets`: 列出工程中的 Target 名称后退出
+- `--compiler`: 显式指定编译器路径，优先级高于 VSCode 设置
+- `--dry-run`: 只解析并打印摘要，不写入文件
+- `--verbose`: 打印解析摘要
+- `--check-missing-files`: 检查缺失的源文件和 include 路径
 
 **示例:**
 
 基本用法:
 ```bash
-python main.py C:/Path/To/Your/Project/YourProject.uvprojx
+uv run --no-sync k2c C:/Path/To/Your/Project/YourProject.uvprojx
+```
+
+查看 Target:
+```bash
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx --list-targets
+```
+
+指定 Target 和编译器:
+```bash
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx --target Debug --compiler C:/Keil_v5/ARM/ARMCLANG/bin/armclang.exe
+```
+
+指定输出路径:
+```bash
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx -o build/compile_commands.json
+```
+
+检查解析结果:
+```bash
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx --dry-run --verbose --check-missing-files
 ```
 
 创建默认缓存目录:
 ```bash
-python main.py ../../MyKeilProject/MyProject.uvprojx -d
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx -d
 ```
 
 创建自定义缓存目录:
 ```bash
-python main.py ../../MyKeilProject/MyProject.uvprojx -d my_cache
+uv run --no-sync k2c ../../MyKeilProject/MyProject.uvprojx -d my_cache
 ```
 
 当然你也可以使用打包好的exe可执行文件 [Release](https://github.com/liuyu80/keil2CompileCommands/releases/latest)
@@ -55,7 +94,7 @@ python main.py ../../MyKeilProject/MyProject.uvprojx -d my_cache
 k2c ../../MyKeilProject/MyProject.uvprojx -d
 ```
 
-脚本将在运行 `main.py` 的目录下生成一个名为 `compile_commands.json` 的文件。
+工具默认将在当前工作目录下生成一个名为 `compile_commands.json` 的文件。
 
 ## 编译器路径设置
 
