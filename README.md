@@ -41,19 +41,6 @@ pip install keil2compilecommands
 k2c --version
 ```
 
-通过 Scoop 安装 GitHub Release 中的 manifest:
-
-```powershell
-scoop install https://github.com/liuyu80/keil2CompileCommands/releases/latest/download/k2c.json
-```
-
-如果维护了自己的 Scoop bucket，也可以先添加 bucket，再安装:
-
-```powershell
-scoop bucket add liuyu80 https://github.com/liuyu80/scoop-bucket
-scoop install k2c
-```
-
 也可以从 GitHub Release 下载 `k2c.exe` 后直接运行。
 
 ### 本地开发运行
@@ -171,28 +158,4 @@ Clangd LSP 安装包: https://github.com/clangd/clangd/releases/latest
 
 VS Code 的 Clangd 插件: https://github.com/clangd/vscode-clangd/releases/latest
 
-## 发布
 
-发布新版本时推送符合 `v*.*.*` 格式的 tag:
-
-```bash
-git tag -a v1.5.0 -m "v1.5.0"
-git push origin v1.5.0
-```
-
-GitHub Actions 会自动:
-- 构建 `k2c.exe`
-- 生成 `k2c.exe.sha256`
-- 生成 Scoop manifest `k2c.json`
-- 创建 GitHub Release
-- 构建 Python wheel/sdist
-- 发布到 PyPI
-- 可选发布 `k2c.json` 到 Scoop bucket
-
-PyPI 发布使用 Trusted Publishing，需要在 PyPI 项目中授权 GitHub 仓库和 `.github/workflows/release.yml`。
-
-Scoop manifest 模板位于 `scoop/k2c.json.template`。workflow 会用 release tag 和 `k2c.exe` 的 SHA256 自动生成 `k2c.json`，并上传到 GitHub Release。
-
-如果要自动推送到 Scoop bucket，在 GitHub 仓库中配置:
-- Repository variable: `SCOOP_BUCKET_REPO`，例如 `liuyu80/scoop-bucket`
-- Secret: `SCOOP_BUCKET_TOKEN`，需要对 bucket 仓库有写权限
