@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import os
+import sys
 import unittest
+from pathlib import Path
 from unittest import mock
 
-import version
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from keil2compilecommands import version
 
 
 class VersionTests(unittest.TestCase):

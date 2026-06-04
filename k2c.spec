@@ -16,7 +16,7 @@ version_hook.write_text(
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['src'],
     binaries=[],
     datas=[],
     hiddenimports=[],

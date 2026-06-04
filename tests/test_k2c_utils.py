@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import textwrap
 import unittest
 from pathlib import Path
 
-from k2c_utils import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from keil2compilecommands.k2c_utils import (
     build_compile_commands,
     check_missing_paths,
     keil_cpu_arguments,
     list_target_names,
 )
-from cli import main
+from keil2compilecommands.cli import main
 
 
 class K2CUtilsTests(unittest.TestCase):

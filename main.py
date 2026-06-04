@@ -1,5 +1,11 @@
-from cli import main
-from k2c_utils import (
+from pathlib import Path
+import sys
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+
+from keil2compilecommands.cli import main
+from keil2compilecommands.k2c_utils import (
     build_compile_commands,
     create_clangd_directory,
     get_clangd_query_driver,

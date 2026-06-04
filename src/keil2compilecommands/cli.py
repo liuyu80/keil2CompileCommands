@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from k2c_utils import (
+from .k2c_utils import (
     build_compile_commands,
     check_missing_paths,
     create_clangd_directory,
@@ -12,7 +12,7 @@ from k2c_utils import (
     list_target_names,
     write_compile_commands,
 )
-from version import get_version
+from .version import get_version
 
 
 def build_parser() -> argparse.ArgumentParser:
