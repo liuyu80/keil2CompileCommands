@@ -123,8 +123,10 @@ k2c ../../MyKeilProject/MyProject.uvprojx -d
 ## 编译器路径设置
 
 为了获取正确的编译器路径，脚本会按以下顺序查找：
-1. 当前项目目录下的 `.vscode/settings.json`
-2. 全局 VSCode 用户设置 (`AppData/Code/User/settings.json`)
+1. `--compiler` 显式指定的编译器路径
+2. 当前项目目录下的 `.vscode/settings.json`
+3. 全局 VSCode 用户设置 (`AppData/Code/User/settings.json`)
+4. 如果以上方式都未找到，扫描系统 `PATH` 中常见的编译器并列出名称和路径，提示用户选择
 
 如果找不到编译器路径，脚本会提醒您添加以下配置到 VSCode 设置中：
 ```json
@@ -157,4 +159,3 @@ k2c ../../MyKeilProject/MyProject.uvprojx -d
 Clangd LSP 安装包: https://github.com/clangd/clangd/releases/latest
 
 VS Code 的 Clangd 插件: https://github.com/clangd/vscode-clangd/releases/latest
-

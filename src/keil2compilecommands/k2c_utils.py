@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Optional
@@ -9,6 +10,17 @@ import xml.etree.ElementTree as ET
 
 
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".s"}
+COMMON_COMPILER_NAMES = (
+    "armclang",
+    "armcc",
+    "arm-none-eabi-gcc",
+    "arm-none-eabi-g++",
+    "clang",
+    "clang++",
+    "gcc",
+    "g++",
+    "cl",
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +57,12 @@ class KeilTarget:
 class MissingPathReport:
     missing_sources: list[str]
     missing_includes: list[str]
+
+
+@dataclass(frozen=True)
+class CompilerCandidate:
+    name: str
+    path: str
 
 
 def normalize_path(path: Path | str) -> str:
@@ -471,6 +489,83 @@ def check_missing_paths(
     return MissingPathReport(missing_sources=missing_sources, missing_includes=missing_includes)
 
 
+def find_system_compilers(
+    *,
+    path_value: Optional[str] = None,
+    pathext_value: Optional[str] = None,
+) -> list[CompilerCandidate]:
+    if path_value is None:
+        path_value = os.getenv("PATH", "")
+    if pathext_value is None:
+        pathext_value = os.getenv("PATHEXT", ".COM;.EXE;.BAT;.CMD")
+
+    path_extensions = [""] + [
+        extension.lower()
+        for extension in split_list(pathext_value, ";")
+        if extension
+    ]
+    candidates: list[CompilerCandidate] = []
+    seen_paths: set[str] = set()
+
+    for raw_directory in split_list(path_value, os.pathsep):
+        directory = Path(raw_directory.strip('"'))
+        if not directory.is_dir():
+            continue
+        for compiler_name in COMMON_COMPILER_NAMES:
+            for extension in path_extensions:
+                executable = directory / f"{compiler_name}{extension}"
+                if not _is_executable_file(executable):
+                    continue
+                normalized_path = os.path.normcase(str(executable.resolve()))
+                if normalized_path in seen_paths:
+                    continue
+                seen_paths.add(normalized_path)
+                candidates.append(
+                    CompilerCandidate(
+                        name=compiler_name,
+                        path=normalize_path(executable),
+                    )
+                )
+
+    return candidates
+
+
+def choose_compiler(candidates: list[CompilerCandidate]) -> Optional[str]:
+    if not candidates:
+        return None
+
+    print("Found compilers in PATH:")
+    for index, candidate in enumerate(candidates, start=1):
+        print(f"  {index}. {candidate.name}: {candidate.path}")
+
+    while True:
+        try:
+            answer = input(
+                "Select compiler number, enter compiler path manually, "
+                "or press Enter to skip: "
+            ).strip()
+        except EOFError:
+            return None
+
+        if not answer:
+            return None
+        if answer.isdecimal():
+            selected = int(answer)
+            if 1 <= selected <= len(candidates):
+                return candidates[selected - 1].path
+            print(f"Invalid compiler number: {answer}")
+            continue
+        return answer
+
+
+def _is_executable_file(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    if os.name == "nt":
+        return True
+    return os.access(path, os.X_OK)
+
+
 def get_clangd_query_driver(project_dir: str | Path | None = None) -> str:
     def read_json_file(file_path: Path) -> dict[str, Any]:
         try:
@@ -504,6 +599,11 @@ def get_clangd_query_driver(project_dir: str | Path | None = None) -> str:
     app_data = os.getenv("AppData")
     if app_data:
         compiler = find_compiler_in_settings(Path(app_data) / "Code" / "User" / "settings.json")
+        if compiler:
+            return compiler
+
+    if sys.stdin.isatty():
+        compiler = choose_compiler(find_system_compilers())
         if compiler:
             return compiler
 

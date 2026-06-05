@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import textwrap
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -12,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from keil2compilecommands.k2c_utils import (
     build_compile_commands,
     check_missing_paths,
+    find_system_compilers,
+    get_clangd_query_driver,
     keil_cpu_arguments,
     list_target_names,
 )
@@ -108,6 +112,38 @@ class K2CUtilsTests(unittest.TestCase):
 
         self.assertIn("src/startup.S", report.missing_sources)
         self.assertIn("Drivers/CMSIS", report.missing_includes)
+
+    def test_finds_system_compilers_from_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bin_dir = Path(tmp)
+            compiler = bin_dir / "armclang.exe"
+            compiler.write_text("", encoding="utf-8")
+            compiler.chmod(0o755)
+
+            candidates = find_system_compilers(
+                path_value=str(bin_dir),
+                pathext_value=".EXE",
+            )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0].name, "armclang")
+        self.assertTrue(candidates[0].path.endswith("armclang.exe"))
+
+    def test_get_clangd_query_driver_lets_user_select_system_compiler(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bin_dir = root / "bin"
+            bin_dir.mkdir()
+            compiler = bin_dir / "arm-none-eabi-gcc.exe"
+            compiler.write_text("", encoding="utf-8")
+            compiler.chmod(0o755)
+
+            with patch.dict(os.environ, {"PATH": str(bin_dir), "PATHEXT": ".EXE", "AppData": ""}):
+                with patch("sys.stdin.isatty", return_value=True):
+                    with patch("builtins.input", return_value="1"):
+                        selected = get_clangd_query_driver(root)
+
+        self.assertTrue(selected.endswith("arm-none-eabi-gcc.exe"))
 
     def test_cli_dry_run_and_output(self) -> None:
         with temp_project(self.sample_project()) as project:
