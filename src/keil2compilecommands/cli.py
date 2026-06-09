@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .k2c_utils import (
     build_compile_commands,
+    find_keil_project_files,
     check_missing_paths,
     create_clangd_directory,
     get_clangd_query_driver,
@@ -14,13 +15,32 @@ from .k2c_utils import (
 )
 from .version import get_version
 
+def _search_and_select_project() -> str:
+    """Search current directory for Keil project files and let user select one."""
+    cwd = Path.cwd()
+    project_files = find_keil_project_files(cwd)
+    if not project_files:
+        sys.exit("Error: No Keil project files (.uvprojx, .uvproj) found in current directory.")
+    print(f"Found {len(project_files)} Keil project file(s):")
+    for i, f in enumerate(project_files, start=1):
+        print(f"  {i}. {f.name}  ({f.relative_to(cwd)})")
+    while True:
+        try:
+            answer = input("Select project number: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            raise SystemExit(0)
+        if answer.isdecimal():
+            selected = int(answer)
+            if 1 <= selected <= len(project_files):
+                return str(project_files[selected - 1])
+        print(f"Invalid selection: {answer}. Please enter a number between 1 and {len(project_files)}.")
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Parse Keil project file and generate compile_commands.json"
     )
     parser.add_argument("--version", action="version", version=f"k2c {get_version()}")
-    parser.add_argument("project_file", type=str, help="Path to Keil project file (.uvprojx .uvproj)")
+    parser.add_argument("project_file", nargs="?", type=str, help="Path to Keil project file (.uvprojx .uvproj)")
     parser.add_argument("-d", nargs="?", const=".cache", metavar="CACHE_DIR",
                         help="Create clangd cache directory (default: .cache)")
     parser.add_argument("-o", "--output", default="compile_commands.json",
@@ -37,10 +57,12 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Warn about missing source and include paths")
     return parser
 
-
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if not args.project_file:
+        args.project_file = _search_and_select_project()
 
     project_path = Path(args.project_file)
     if not project_path.exists():
@@ -84,7 +106,6 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

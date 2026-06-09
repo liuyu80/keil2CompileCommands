@@ -23,6 +23,18 @@ COMMON_COMPILER_NAMES = (
 )
 
 
+KEIL_PROJECT_SUFFIXES = {".uvprojx", ".uvproj"}
+
+
+def find_keil_project_files(search_dir: Path) -> list[Path]:
+    """Recursively find Keil project files (.uvprojx, .uvproj) under *search_dir*."""
+    return sorted(
+        path.resolve()
+        for path in Path(search_dir).rglob("*")
+        if path.suffix.lower() in KEIL_PROJECT_SUFFIXES
+    )
+
+
 @dataclass(frozen=True)
 class KeilControls:
     defines: list[str] = field(default_factory=list)

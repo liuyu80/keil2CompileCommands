@@ -72,10 +72,17 @@ uv run --no-sync k2c <path_to_your_keil_project.uvprojx> [options]
 
 **示例:**
 
+如果不指定项目文件，工具会自动在当前目录下递归搜索 .uvprojx 和 .uvproj 文件，列出序号、文件名和相对路径，输入序号即可选择要解析的项目。
+
 基本用法:
 ```bash
 uv run --no-sync k2c C:/Path/To/Your/Project/YourProject.uvprojx
 ```
+
+自动搜索当前目录下的 Keil 项目文件:
+`ash
+uv run --no-sync k2c
+`
 
 查看 Target:
 ```bash
